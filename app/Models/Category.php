@@ -11,6 +11,6 @@ class Category extends Model
 
     protected $fillable = [
         'title',
-        'price'
+        'price_per_hour'
     ];
 }

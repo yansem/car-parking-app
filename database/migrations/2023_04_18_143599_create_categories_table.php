@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('title', 1);
-            $table->smallInteger('price')->unsigned();
+            $table->smallInteger('price_per_hour')->unsigned();
 
             $table->timestamps();
         });

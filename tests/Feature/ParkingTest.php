@@ -70,7 +70,7 @@ class ParkingTest extends TestCase
             ->assertJson([
                 'data' => [
                     'stop_time'   => null,
-                    'total_price' => $zone->rate * $vehicle->category->price * 2,
+                    'total_price' => $zone->rate * $vehicle->category->price_per_hour * 2,
                 ],
             ]);
     }
