@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Parking;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class ParkingRequest extends FormRequest
+class ParkingUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +24,8 @@ class ParkingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'vehicle_id' => [
-                'required',
-                'integer',
-                'exists:vehicles,id,deleted_at,NULL,user_id,' . auth()->id(),
-            ],
-            'zone_id' => ['required', 'integer', 'exists:zones,id']
+            'parking_id' => ['required', 'integer'],
+            'price' => ['required', Rule::in(Parking::find($this->parking_id)->total_price)]
         ];
     }
 }

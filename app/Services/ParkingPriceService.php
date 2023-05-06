@@ -8,10 +8,10 @@ use Carbon\Carbon;
 
 class ParkingPriceService
 {
-    public static function calculatePrice(int $zone_id, int $category_id, string $startTime, string $stopTime = null): int
+    public static function calculatePrice(int $zone_id, int $category_id, string $startTime, string $stopTime): int
     {
         $start = new Carbon($startTime);
-        $stop = (!is_null($stopTime)) ? new Carbon($stopTime) : now();
+        $stop = new Carbon($stopTime);
 
         $totalTimeByMinutes = $stop->diffInMinutes($start);
 
