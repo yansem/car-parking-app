@@ -19,7 +19,8 @@ return new class extends Migration
             $table->foreignId('zone_id')->constrained();
             $table->dateTime('start_time')->nullable();
             $table->dateTime('stop_time')->nullable();
-            $table->integer('total_price')->nullable();
+            $table->integer('total_price')->nullable(); //todo can be float?
+            $table->boolean('paid')->default(false);
 
             $table->timestamps();
         });

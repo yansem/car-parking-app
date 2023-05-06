@@ -10,13 +10,17 @@ class Parking extends Model
 {
     use HasFactory;
 
+    public const START_FREE_PARKING = '20:01';
+    public const END_FREE_PARKING = '07:59';
+
     protected $fillable = [
         'user_id',
         'vehicle_id',
         'zone_id',
         'start_time',
         'stop_time',
-        'total_price'
+        'total_price',
+        'paid'
     ];
 
     protected $casts = [
@@ -43,11 +47,7 @@ class Parking extends Model
 
     public function scopeActive($query)
     {
-        return $query->whereNull('stop_time');
-    }
-
-    public function scopeStopped($query)
-    {
-        return $query->whereNotNull('stop_time');
+        return $query->where('start_time', '<=', now())
+            ->where('stop_time', '>=', now());
     }
 }
