@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ParkingStoreRequest;
+use App\Http\Requests\ParkingUpdateRequest;
 use App\Http\Resources\ParkingResource;
 use App\Models\Parking;
 use App\Models\Vehicle;
@@ -41,7 +42,7 @@ class ParkingController extends Controller
         return ParkingResource::make($parking);
     }
 
-    public function update(Parking $parking)
+    public function update(ParkingUpdateRequest $parkingUpdateRequest, Parking $parking)
     {
         $parking->update(['paid' => true]);
 
