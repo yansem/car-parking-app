@@ -10,6 +10,8 @@ class Parking extends Model
 {
     use HasFactory;
 
+    public const START_PAID_PARKING = '08:00';
+    public const END_PAID_PARKING = '20:00';
     public const START_FREE_PARKING = '20:01';
     public const END_FREE_PARKING = '07:59';
 
