@@ -6,6 +6,8 @@ use App\Models\Parking;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\Zone;
+use App\Services\ParkingPriceService;
+use Carbon\CarbonImmutable;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\ZoneSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +17,7 @@ class ParkingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testUserCanStartParking()
+    public function test_user_parking_correct_price_in_paid_interval()
     {
         $this->seed([
             CategorySeeder::class,
@@ -23,28 +25,31 @@ class ParkingTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        $vehicle = Vehicle::factory()->create(['user_id' => $user->id]);
+        $vehicle = Vehicle::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => 2
+        ]);
         $zone = Zone::first();
 
         $response = $this->actingAs($user)->postJson('/api/v1/parkings/start', [
             'vehicle_id' => $vehicle->id,
             'zone_id'    => $zone->id,
+            'hours' => 1
         ]);
 
+        $startTime = (new CarbonImmutable())->setTimeFromTimeString('12:00');
+        $stopTime = $startTime->addHour();
+
+        $totalPrice = ParkingPriceService::calculatePrice($zone->id, $vehicle->category_id, $startTime, $stopTime, 1);
+        $this->assertEquals(100, $totalPrice);
+
         $response->assertStatus(201)
-            ->assertJsonStructure(['data'])
-            ->assertJson([
-                'data' => [
-                    'start_time'  => now()->toDateTimeString(),
-                    'stop_time'   => null,
-                    'total_price' => 0,
-                ],
-            ]);
+            ->assertJsonStructure(['data']);
 
         $this->assertDatabaseCount('parkings', '1');
     }
 
-    public function testUserCanGetOngoingParkingWithCorrectPrice()
+    public function test_user_parking_correct_price_if_stop_on_free()
     {
         $this->seed([
             CategorySeeder::class,
@@ -52,30 +57,31 @@ class ParkingTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        $vehicle = Vehicle::factory()->create(['user_id' => $user->id]);
+        $vehicle = Vehicle::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => 2
+        ]);
         $zone = Zone::first();
 
-        $this->actingAs($user)->postJson('/api/v1/parkings/start', [
+        $response = $this->actingAs($user)->postJson('/api/v1/parkings/start', [
             'vehicle_id' => $vehicle->id,
             'zone_id'    => $zone->id,
+            'hours' => 1
         ]);
 
-        $this->travel(2)->hours();
+        $startTime = (new CarbonImmutable())->setTimeFromTimeString('19:15');
+        $stopTime = $startTime->addHour();
 
-        $parking = Parking::first();
-        $response = $this->actingAs($user)->getJson('/api/v1/parkings/' . $parking->id);
+        $totalPrice = ParkingPriceService::calculatePrice($zone->id, $vehicle->category_id, $startTime, $stopTime, 1);
+        $this->assertEquals(75, $totalPrice);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure(['data'])
-            ->assertJson([
-                'data' => [
-                    'stop_time'   => null,
-                    'total_price' => $zone->rate * $vehicle->category->price_per_hour * 2,
-                ],
-            ]);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['data']);
+
+        $this->assertDatabaseCount('parkings', '1');
     }
 
-    public function testUserCanStopParking()
+    public function test_user_parking_correct_price_if_start_on_free()
     {
         $this->seed([
             CategorySeeder::class,
@@ -83,30 +89,26 @@ class ParkingTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        $vehicle = Vehicle::factory()->create(['user_id' => $user->id]);
+        $vehicle = Vehicle::factory()->create([
+            'user_id' => $user->id,
+            'category_id' => 2
+        ]);
         $zone = Zone::first();
 
-        $this->actingAs($user)->postJson('/api/v1/parkings/start', [
+        $response = $this->actingAs($user)->postJson('/api/v1/parkings/start', [
             'vehicle_id' => $vehicle->id,
             'zone_id'    => $zone->id,
+            'hours' => 1
         ]);
 
-        $this->travel(2)->hours();
+        $startTime = (new CarbonImmutable())->setTimeFromTimeString('07:45');
+        $stopTime = $startTime->addHour();
 
-        $parking = Parking::first();
-        $response = $this->actingAs($user)->putJson('/api/v1/parkings/' . $parking->id);
+        $totalPrice = ParkingPriceService::calculatePrice($zone->id, $vehicle->category_id, $startTime, $stopTime, 1);
+        $this->assertEquals(75, $totalPrice);
 
-        $updatedParking = Parking::find($parking->id);
-
-        $response->assertStatus(200)
-            ->assertJsonStructure(['data'])
-            ->assertJson([
-                'data' => [
-                    'start_time'  => $updatedParking->start_time->toDateTimeString(),
-                    'stop_time'   => $updatedParking->stop_time->toDateTimeString(),
-                    'total_price' => $updatedParking->total_price,
-                ],
-            ]);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['data']);
 
         $this->assertDatabaseCount('parkings', '1');
     }
