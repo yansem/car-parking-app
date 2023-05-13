@@ -41,7 +41,8 @@ class ParkingTest extends TestCase
         $stopTime = $startTime->addHour();
 
         $totalPrice = ParkingPriceService::calculatePrice($zone->id, $vehicle->category_id, $startTime, $stopTime, 1);
-        $this->assertEquals(100, $totalPrice);
+
+        $this->assertEquals($vehicle->category->price_per_hour, $totalPrice);
 
         $response->assertStatus(201)
             ->assertJsonStructure(['data']);
@@ -73,7 +74,11 @@ class ParkingTest extends TestCase
         $stopTime = $startTime->addHour();
 
         $totalPrice = ParkingPriceService::calculatePrice($zone->id, $vehicle->category_id, $startTime, $stopTime, 1);
-        $this->assertEquals(75, $totalPrice);
+
+        $diffInMinutes = $startTime->diffInMinutes(Parking::END_PAID_PARKING);
+        $expectPrice = 100 * $diffInMinutes / 60;
+
+        $this->assertEquals($expectPrice, $totalPrice);
 
         $response->assertStatus(201)
             ->assertJsonStructure(['data']);
@@ -105,7 +110,11 @@ class ParkingTest extends TestCase
         $stopTime = $startTime->addHour();
 
         $totalPrice = ParkingPriceService::calculatePrice($zone->id, $vehicle->category_id, $startTime, $stopTime, 1);
-        $this->assertEquals(75, $totalPrice);
+
+        $diffInMinutes = 60 - $startTime->diffInMinutes(Parking::START_PAID_PARKING);
+        $expectPrice = 100 * $diffInMinutes / 60;
+
+        $this->assertEquals($expectPrice, $totalPrice);
 
         $response->assertStatus(201)
             ->assertJsonStructure(['data']);
