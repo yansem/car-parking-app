@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\PasswordUpdateController;
 use App\Http\Controllers\Api\V1\Auth\ProfileController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
+use App\Http\Controllers\Api\V1\FineController;
 use App\Http\Controllers\Api\V1\ParkingController;
 use App\Http\Controllers\Api\V1\VehicleController;
 use App\Http\Controllers\Api\V1\ZoneController;
@@ -33,7 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('vehicles', VehicleController::class);
 
-    Route::post('parkings/start', [ParkingController::class, 'store']);
+    Route::post('parkings', [ParkingController::class, 'store']);
     Route::put('parkings/{parking}', [ParkingController::class, 'update'])->whereNumber('parking');
     Route::get('parkings/{parking}', [ParkingController::class, 'show'])->whereNumber('parking');
+
+    Route::post('fines', [FineController::class, 'store']);
 });
