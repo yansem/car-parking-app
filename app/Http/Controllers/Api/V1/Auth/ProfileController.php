@@ -14,7 +14,7 @@ class ProfileController extends Controller
 {
     public function show(Request $request)
     {
-        return response()->json($request->user()->only('name', 'email'));
+        return response()->json($request->user()->only('name', 'email', 'account_amount'));
     }
 
     public function update(ProfileRequest $request)
