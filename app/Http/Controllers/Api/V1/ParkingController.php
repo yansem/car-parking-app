@@ -22,7 +22,7 @@ class ParkingController extends Controller
 
         if (Parking::active()->where('vehicle_id', $parkingData['vehicle_id'])->exists()) {
             return response()->json([
-                'errors' => ['general' => ['Can\'t start parking twice using same vehicle. Please stop currently active parking.']],
+                'errors' => ['general' => ['Нельзя припарковать одну и туже машину дважды. Оставновите текущую парковку.']],
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -37,6 +37,16 @@ class ParkingController extends Controller
             $parkingData['stop_time'],
             $parkingData['hours']
         );
+
+        if ($parkingData['total_price'] === 0) {
+            return response()->json(['successes' => ['general' => ['Парковка бесплатная!']]]);
+        }
+
+        if (auth()->user()->account_amount < $parkingData['total_price']) {
+            return response()->json(['errors' => ['general' => ['Недостаточно средств на счете']]]);
+        }
+
+        auth()->user()->decrement('account_amount', $parkingData['total_price']);
         $parking = Parking::create($parkingData);
 
         return ParkingResource::make($parking);

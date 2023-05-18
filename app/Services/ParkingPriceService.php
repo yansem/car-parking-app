@@ -20,11 +20,15 @@ class ParkingPriceService
         $start_free = new Carbon(Parking::START_FREE_PARKING);
         $end_free = new Carbon(Parking::END_FREE_PARKING);
 
-        if ($stop->gte($start_free)) {
+        //todo попроавить условия, не учитывают дату, т.е. сейчас 18.05.2023 23:00 > 19.05.2023 6:00
+        if ($stop->gte($start_free) && $start->lt($start_free)) {
             $hours = $start->diffInMinutes($end_paid) / 60;
         }
-        elseif ($start->lte($end_free)) {
+        elseif ($start->lte($end_free) && $stop->gt($end_free)) {
             $hours = $start_paid->diffInMinutes($stop) / 60;
+        }
+        elseif ($start->gte($start_free) && $stop->lte($end_free)) {
+            return 0;
         }
 
         return ceil(Zone::find($zone_id)->rate * Category::find($category_id)->price_per_hour * $hours);
