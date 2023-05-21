@@ -46,6 +46,7 @@ class ParkingController extends Controller
                 Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        auth()->user()->decrement('account_amount', auth()->user()->total_price);
         $parking = Parking::create($parkingData);
 
         return ParkingResource::make($parking);
@@ -53,9 +54,6 @@ class ParkingController extends Controller
 
     public function update(ParkingUpdateRequest $parkingUpdateRequest, Parking $parking)
     {
-        auth()->user()->decrement('account_amount', auth()->user()->total_price);
-        $parking->update(['paid' => true]);
-
         return ParkingResource::make($parking);
     }
 

@@ -20,7 +20,6 @@ return new class extends Migration
             $table->dateTime('start_time')->nullable();
             $table->dateTime('stop_time')->nullable();
             $table->integer('total_price')->nullable();
-            $table->boolean('paid')->default(false);
 
             $table->timestamps();
         });

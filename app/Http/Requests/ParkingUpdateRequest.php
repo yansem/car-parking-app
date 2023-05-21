@@ -24,7 +24,7 @@ class ParkingUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'price' => ['required', 'integer', Rule::in($this->route('parking')->total_price)]
+
         ];
     }
 }
