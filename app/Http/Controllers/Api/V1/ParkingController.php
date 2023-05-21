@@ -26,7 +26,6 @@ class ParkingController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-
         $parkingData['start_time'] = now();
         $parkingData['stop_time'] = $parkingData['start_time']->copy()->addHours($parkingData['hours']);
         $vehicle = Vehicle::find($parkingData['vehicle_id']);
@@ -43,10 +42,10 @@ class ParkingController extends Controller
         }
 
         if (auth()->user()->account_amount < $parkingData['total_price']) {
-            return response()->json(['errors' => ['general' => ['Недостаточно средств на счете']]]);
+            return response()->json(['errors' => ['general' => ['Недостаточно средств на счете']]],
+                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        auth()->user()->decrement('account_amount', $parkingData['total_price']);
         $parking = Parking::create($parkingData);
 
         return ParkingResource::make($parking);
@@ -54,6 +53,7 @@ class ParkingController extends Controller
 
     public function update(ParkingUpdateRequest $parkingUpdateRequest, Parking $parking)
     {
+        auth()->user()->decrement('account_amount', auth()->user()->total_price);
         $parking->update(['paid' => true]);
 
         return ParkingResource::make($parking);
